@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book an Appointment — Zentrix Solutions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg:      #050a12;
+    --surface: #0c1422;
+    --border:  rgba(255,255,255,0.07);
+    --accent:  #00e5ff;
+    --accent2: #7b5cfa;
+    --text:    #e8edf5;
+    --muted:   #7a8a9e;
+    --card-bg: rgba(255,255,255,0.03);
+    --radius:  14px;
+    --success: #00d68f;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+
+  /* noise */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.5; z-index: 0;
+  }
+
+  /* ambient glow */
+  .glow-bg {
+    position: fixed; top: -200px; left: 50%;
+    transform: translateX(-50%);
+    width: 900px; height: 600px;
+    background: radial-gradient(ellipse at center,
+      rgba(0,229,255,0.07) 0%,
+      rgba(123,92,250,0.06) 40%,
+      transparent 70%);
+    pointer-events: none; z-index: 0;
+    animation: glow-pulse 7s ease-in-out infinite alternate;
+  }
+  @keyframes glow-pulse {
+    from { opacity: 0.7; transform: translateX(-50%) scale(1); }
+    to   { opacity: 1;   transform: translateX(-50%) scale(1.1); }
+  }
+
+  /* ── NAV ── */
+  .navbar {
+    position: sticky; top: 0;
+    height: 68px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 clamp(1.5rem, 5vw, 4rem);
+    background: rgba(5,10,18,0.8);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    z-index: 50;
+  }
+
+  .nav-brand {
+    display: flex; align-items: center; gap: 0.6rem;
+    text-decoration: none;
+  }
+
+  .nav-logo-mark {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 0.8rem; color: #fff;
+  }
+
+  .nav-wordmark {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 1.05rem;
+    color: var(--text); letter-spacing: -0.01em;
+  }
+
+  .nav-back {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 0.85rem; color: var(--muted);
+    text-decoration: none;
+    padding: 0.4rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card-bg);
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .nav-back:hover { color: var(--text); border-color: rgba(255,255,255,0.15); }
+
+  /* ── PAGE WRAPPER ── */
+  .page {
+    position: relative; z-index: 1;
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 3rem 1.5rem 4rem;
+  }
+
+  .booking-shell {
+    width: 100%;
+    max-width: 900px;
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 2px;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px var(--border);
+    animation: rise 0.6s ease both;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── LEFT PANEL ── */
+  .panel-left {
+    background: var(--surface);
+    padding: 2.8rem 2.2rem;
+    display: flex; flex-direction: column;
+    gap: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .panel-left::before {
+    content: '';
+    position: absolute; bottom: -60px; left: -60px;
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,229,255,0.1), transparent 70%);
+    pointer-events: none;
+  }
+
+  .panel-logo {
+    display: flex; align-items: center; gap: 0.7rem;
+  }
+
+  .logo-mark-lg {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 13px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 1rem; color: #fff;
+    box-shadow: 0 8px 24px rgba(0,229,255,0.25);
+  }
+
+  .logo-text { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.2rem; }
+  .logo-sub  { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+
+  .panel-heading h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.55rem; font-weight: 800;
+    letter-spacing: -0.025em; line-height: 1.2;
+    margin-bottom: 0.55rem;
+  }
+
+  .panel-heading h1 span {
+    background: linear-gradient(100deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .panel-heading p {
+    font-size: 0.88rem; color: var(--muted); line-height: 1.65;
+  }
+
+  .services-list {
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+
+  .services-list-title {
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--accent);
+    margin-bottom: 0.2rem;
+  }
+
+  .service-chip {
+    display: flex; align-items: center; gap: 0.65rem;
+    padding: 0.65rem 0.9rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    user-select: none;
+  }
+
+  .service-chip:hover    { border-color: rgba(0,229,255,0.25); background: rgba(0,229,255,0.04); }
+  .service-chip.selected {
+    border-color: rgba(0,229,255,0.45);
+    background: rgba(0,229,255,0.08);
+    transform: translateX(4px);
+  }
+
+  .chip-icon {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(0,229,255,0.12), rgba(123,92,250,0.12));
+    border: 1px solid rgba(0,229,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; flex-shrink: 0;
+  }
+
+  .chip-text { font-size: 0.85rem; font-weight: 500; }
+  .chip-check {
+    margin-left: auto;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.6rem;
+    color: transparent;
+    transition: 0.2s;
+  }
+  .service-chip.selected .chip-check {
+    background: var(--accent); border-color: var(--accent);
+    color: #000;
+  }
+
+  .panel-contact {
+    margin-top: auto;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.78rem;
+    color: var(--muted);
+    display: flex; flex-direction: column; gap: 0.35rem;
+  }
+
+  .panel-contact a { color: var(--muted); text-decoration: none; }
+  .panel-contact a:hover { color: var(--text); }
+
+  /* ── RIGHT PANEL ── */
+  .panel-right {
+    background: #080e1a;
+    padding: 2.8rem 2.4rem;
+    display: flex; flex-direction: column; gap: 1.6rem;
+  }
+
+  .step-indicator {
+    display: flex; align-items: center; gap: 0;
+  }
+
+  .step {
+    display: flex; align-items: center;
+  }
+
+  .step-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: var(--card-bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 700; color: var(--muted);
+    transition: 0.3s;
+    flex-shrink: 0;
+  }
+
+  .step.active  .step-dot { border-color: var(--accent); background: rgba(0,229,255,0.12); color: var(--accent); }
+  .step.done    .step-dot { border-color: var(--success); background: rgba(0,214,143,0.1); color: var(--success); }
+
+  .step-label {
+    font-size: 0.72rem; color: var(--muted); margin-left: 0.45rem;
+    white-space: nowrap;
+  }
+  .step.active .step-label { color: var(--text); font-weight: 500; }
+
+  .step-line {
+    flex: 1; height: 1px;
+    background: var(--border);
+    margin: 0 0.6rem;
+    min-width: 20px;
+    transition: background 0.3s;
+  }
+  .step-line.done { background: rgba(0,214,143,0.3); }
+
+  .form-section {
+    display: none; flex-direction: column; gap: 1.1rem;
+    animation: fade-in 0.35s ease both;
+  }
+  .form-section.active { display: flex; }
+
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateX(10px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+
+  .field { display: flex; flex-direction: column; gap: 0.45rem; }
+
+  .field label {
+    font-size: 0.78rem; font-weight: 600;
+    color: var(--muted); letter-spacing: 0.03em;
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+  }
+
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    border-color: rgba(0,229,255,0.4);
+    box-shadow: 0 0 0 3px rgba(0,229,255,0.08);
+  }
+
+  .field input::placeholder,
+  .field textarea::placeholder { color: #3d4f62; }
+  .field select option { background: #0c1422; }
+  .field textarea { resize: vertical; min-height: 90px; }
+
+  /* calendar quick-pick */
+  .date-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+
+  .date-grid-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+
+  .dg-day-name {
+    text-align: center;
+    font-size: 0.68rem; font-weight: 600;
+    color: var(--muted); letter-spacing: 0.05em;
+    padding: 0.2rem 0;
+  }
+
+  .dg-day {
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.78rem;
+    border-radius: 7px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: 0.15s;
+    background: transparent;
+    color: var(--text);
+  }
+
+  .dg-day:hover:not(.empty):not(.past)    { background: rgba(255,255,255,0.06); border-color: var(--border); }
+  .dg-day.selected  { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #000; font-weight: 700; }
+  .dg-day.today     { border-color: rgba(0,229,255,0.35); color: var(--accent); }
+  .dg-day.past      { color: #2a3545; cursor: not-allowed; }
+  .dg-day.empty     { cursor: default; }
+
+  .cal-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 0.8rem;
+  }
+
+  .cal-nav-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem; font-weight: 700;
+  }
+
+  .cal-btn {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    color: var(--text); font-size: 0.9rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: 0.2s;
+  }
+  .cal-btn:hover { background: rgba(255,255,255,0.08); }
+
+  /* time slots */
+  .time-slots {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+  }
+
+  .time-slot {
+    padding: 0.55rem;
+    text-align: center;
+    font-size: 0.8rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    cursor: pointer;
+    transition: 0.2s;
+    color: var(--muted);
+  }
+
+  .time-slot:hover:not(.unavailable) { border-color: rgba(0,229,255,0.3); color: var(--text); }
+  .time-slot.selected   { background: linear-gradient(135deg, var(--accent), var(--accent2)); border-color: transparent; color: #000; font-weight: 600; }
+  .time-slot.unavailable { opacity: 0.25; cursor: not-allowed; text-decoration: line-through; }
+
+  /* section title */
+  .section-mini-title {
+    font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 0.25rem;
+  }
+
+  /* review card */
+  .review-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.2rem 1.4rem;
+    display: flex; flex-direction: column; gap: 0.7rem;
+  }
+
+  .review-row {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 0.88rem;
+  }
+  .review-row .rl { color: var(--muted); }
+  .review-row .rv { font-weight: 500; }
+
+  .review-row .rv.accent {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; font-weight: 700;
+  }
+
+  .review-divider { height: 1px; background: var(--border); }
+
+  /* navigation buttons */
+  .btn-row {
+    display: flex; gap: 0.8rem; margin-top: auto; padding-top: 0.5rem;
+  }
+
+  .btn-back {
+    padding: 0.75rem 1.4rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--muted); font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; cursor: pointer;
+    transition: 0.2s;
+  }
+  .btn-back:hover { color: var(--text); border-color: rgba(255,255,255,0.15); }
+
+  .btn-next {
+    flex: 1;
+    padding: 0.8rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; border-radius: var(--radius);
+    color: #000; font-family: 'DM Sans', sans-serif;
+    font-weight: 700; font-size: 0.95rem; cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 24px rgba(0,229,255,0.2);
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  }
+  .btn-next:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 0 40px rgba(0,229,255,0.3); }
+  .btn-next:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+  /* success screen */
+  .success-screen {
+    display: none;
+    flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; gap: 1.2rem;
+    padding: 1rem; flex: 1;
+    animation: fade-in 0.5s ease both;
+  }
+
+  .success-screen.visible { display: flex; }
+
+  .success-icon {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(0,214,143,0.15), rgba(0,229,255,0.1));
+    border: 1px solid rgba(0,214,143,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem;
+    animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.1s both;
+  }
+  @keyframes pop {
+    from { transform: scale(0.5); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+
+  .success-screen h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em;
+  }
+
+  .success-screen p {
+    font-size: 0.9rem; color: var(--muted); max-width: 280px; line-height: 1.6;
+  }
+
+  .booking-ref {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem; font-weight: 700;
+    letter-spacing: 0.1em;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    padding: 0.6rem 1.4rem;
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 8px;
+    background-color: rgba(0,229,255,0.04);
+  }
+
+  .new-booking-btn {
+    padding: 0.7rem 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card-bg);
+    color: var(--muted); font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; cursor: pointer;
+    transition: 0.2s; text-decoration: none;
+    display: inline-block;
+  }
+  .new-booking-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.15); }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative; z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: 1.2rem clamp(1.5rem,5vw,4rem);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 0.5rem;
+  }
+  footer p { font-size: 0.8rem; color: var(--muted); }
+  footer a { font-size: 0.8rem; color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--text); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 700px) {
+    .booking-shell { grid-template-columns: 1fr; }
+    .panel-left    { padding: 1.8rem 1.5rem; }
+    .panel-right   { padding: 1.8rem 1.5rem; }
+    .panel-contact { display: none; }
+    .field-row     { grid-template-columns: 1fr; }
+    .time-slots    { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="glow-bg"></div>
+
+<!-- NAV -->
+<nav class="navbar">
+  <a href="index.html" class="nav-brand">
+    <div class="nav-logo-mark">ZX</div>
+    <span class="nav-wordmark">Zentrix</span>
+  </a>
+  <a href="index.html" class="nav-back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Back to site
+  </a>
+</nav>
+
+<!-- PAGE -->
+<div class="page">
+  <div class="booking-shell">
+
+    <!-- LEFT PANEL -->
+    <div class="panel-left">
+      <div class="panel-logo">
+        <div class="logo-mark-lg">ZX</div>
+        <div>
+          <div class="logo-text">Zentrix Solutions</div>
+          <div class="logo-sub">Digital Partners</div>
+        </div>
+      </div>
+
+      <div class="panel-heading">
+        <h1>Book Your<br><span>Appointment</span></h1>
+        <p>Select a service and pick a time that suits you. We'll confirm within the hour.</p>
+      </div>
+
+      <div class="services-list">
+        <div class="services-list-title">Available Services</div>
+        <div class="service-chip" data-service="Booking Systems">
+          <div class="chip-icon">📅</div>
+          <span class="chip-text">Booking Systems</span>
+          <div class="chip-check">✓</div>
+        </div>
+        <div class="service-chip" data-service="Web Development">
+          <div class="chip-icon">🌐</div>
+          <span class="chip-text">Web Development</span>
+          <div class="chip-check">✓</div>
+        </div>
+        <div class="service-chip" data-service="Mobile Apps">
+          <div class="chip-icon">📱</div>
+          <span class="chip-text">Mobile Apps</span>
+          <div class="chip-check">✓</div>
+        </div>
+        <div class="service-chip" data-service="Business Automation">
+          <div class="chip-icon">⚙️</div>
+          <span class="chip-text">Business Automation</span>
+          <div class="chip-check">✓</div>
+        </div>
+        <div class="service-chip" data-service="Consultation">
+          <div class="chip-icon">💬</div>
+          <span class="chip-text">Free Consultation</span>
+          <div class="chip-check">✓</div>
+        </div>
+      </div>
+
+      <div class="panel-contact">
+        <div>📍 Midrand, Waterfall, Gauteng</div>
+        <div>📞 <a href="tel:0798741752">079 874 1752</a></div>
+        <div>✉️ <a href="mailto:TheolinChetty@icloud.com">TheolinChetty@icloud.com</a></div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="panel-right" id="panelRight">
+
+      <!-- Step Indicator -->
+      <div class="step-indicator">
+        <div class="step active" id="step-dot-1">
+          <div class="step-dot">1</div>
+          <span class="step-label">Details</span>
+        </div>
+        <div class="step-line" id="line-1"></div>
+        <div class="step" id="step-dot-2">
+          <div class="step-dot">2</div>
+          <span class="step-label">Date & Time</span>
+        </div>
+        <div class="step-line" id="line-2"></div>
+        <div class="step" id="step-dot-3">
+          <div class="step-dot">3</div>
+          <span class="step-label">Confirm</span>
+        </div>
+      </div>
+
+      <!-- STEP 1: Personal Details -->
+      <div class="form-section active" id="section-1">
+        <div>
+          <div class="section-mini-title">Your Information</div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>First Name</label>
+            <input type="text" id="firstName" placeholder="Theolin">
+          </div>
+          <div class="field">
+            <label>Last Name</label>
+            <input type="text" id="lastName" placeholder="Chetty">
+          </div>
+        </div>
+        <div class="field">
+          <label>Email Address</label>
+          <input type="email" id="email" placeholder="you@email.com">
+        </div>
+        <div class="field">
+          <label>Phone Number</label>
+          <input type="tel" id="phone" placeholder="079 000 0000">
+        </div>
+        <div class="field">
+          <label>Service Required</label>
+          <select id="serviceSelect">
+            <option value="">— Select a service —</option>
+            <option value="Booking Systems">Booking Systems</option>
+            <option value="Web Development">Web Development</option>
+            <option value="Mobile Apps">Mobile Apps</option>
+            <option value="Business Automation">Business Automation</option>
+            <option value="Consultation">Free Consultation</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Additional Notes <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+          <textarea id="notes" placeholder="Tell us a bit about what you need…"></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn-next" id="btn-1-next" onclick="goStep(2)">
+            Continue
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 2: Date & Time -->
+      <div class="form-section" id="section-2">
+        <div>
+          <div class="section-mini-title">Pick a Date</div>
+          <div class="cal-nav">
+            <button class="cal-btn" onclick="changeMonth(-1)">‹</button>
+            <div class="cal-nav-title" id="calTitle"></div>
+            <button class="cal-btn" onclick="changeMonth(1)">›</button>
+          </div>
+          <div class="date-grid-header" id="calDayNames"></div>
+          <div class="date-grid" id="calGrid"></div>
+        </div>
+        <div>
+          <div class="section-mini-title" style="margin-bottom:0.6rem">Available Times</div>
+          <div class="time-slots" id="timeSlots"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-back" onclick="goStep(1)">Back</button>
+          <button class="btn-next" id="btn-2-next" onclick="goStep(3)" disabled>
+            Review Booking
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Review & Confirm -->
+      <div class="form-section" id="section-3">
+        <div>
+          <div class="section-mini-title">Review Your Booking</div>
+        </div>
+        <div class="review-card" id="reviewCard"></div>
+        <div class="field">
+          <label>Preferred Contact Method</label>
+          <select id="contactPref">
+            <option value="Email">Email</option>
+            <option value="Phone">Phone Call</option>
+            <option value="WhatsApp">WhatsApp</option>
+          </select>
+        </div>
+        <div class="field" style="flex-direction:row;align-items:center;gap:0.7rem;padding:0.8rem 1rem;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--radius)">
+          <input type="checkbox" id="termsCheck" style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0">
+          <label for="termsCheck" style="font-size:0.82rem;color:var(--muted);cursor:pointer">
+            I agree to be contacted by Zentrix Solutions regarding my booking.
+          </label>
+        </div>
+        <div class="btn-row">
+          <button class="btn-back" onclick="goStep(2)">Back</button>
+          <button class="btn-next" id="btn-confirm" onclick="confirmBooking()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
+            Confirm Booking
+          </button>
+        </div>
+      </div>
+
+      <!-- SUCCESS -->
+      <div class="success-screen" id="successScreen">
+        <div class="success-icon">✓</div>
+        <h2>Booking Confirmed!</h2>
+        <p>Thank you! We'll reach out within the hour to confirm your appointment details.</p>
+        <div class="booking-ref" id="bookingRef"></div>
+        <p style="font-size:0.8rem">A confirmation has been sent to <span id="confirmEmail" style="color:var(--text)"></span></p>
+        <a href="index.html" class="new-booking-btn">← Back to Homepage</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 Zentrix Solutions</p>
+  <a href="index.html">Home</a>
+</footer>
+
+<script>
+  /* ── State ── */
+  const state = {
+    step: 1,
+    selectedDate: null,
+    selectedTime: null,
+    calYear: new Date().getFullYear(),
+    calMonth: new Date().getMonth(),
+  };
+
+  /* ── Service chip selection syncs with select ── */
+  const chips = document.querySelectorAll('.service-chip');
+  const serviceSelect = document.getElementById('serviceSelect');
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      chips.forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+      serviceSelect.value = chip.dataset.service;
+    });
+  });
+
+  serviceSelect.addEventListener('change', () => {
+    chips.forEach(c => {
+      c.classList.toggle('selected', c.dataset.service === serviceSelect.value);
+    });
+  });
+
+  /* ── Step navigation ── */
+  function goStep(n) {
+    if (n === 2) {
+      const fn = document.getElementById('firstName').value.trim();
+      const em = document.getElementById('email').value.trim();
+      const sv = serviceSelect.value;
+      if (!fn || !em || !sv) {
+        alert('Please fill in your name, email, and select a service.');
+        return;
+      }
+    }
+    if (n === 3) buildReview();
+
+    state.step = n;
+
+    document.querySelectorAll('.form-section').forEach((s, i) => {
+      s.classList.toggle('active', i + 1 === n);
+    });
+
+    // step dots
+    [1,2,3].forEach(i => {
+      const dot = document.getElementById(`step-dot-${i}`);
+      dot.classList.remove('active','done');
+      if (i < n)  dot.classList.add('done');
+      if (i === n) dot.classList.add('active');
+    });
+
+    [1,2].forEach(i => {
+      const line = document.getElementById(`line-${i}`);
+      line.classList.toggle('done', i < n);
+    });
+  }
+
+  /* ── Calendar ── */
+  const DAY_NAMES = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  const UNAVAILABLE_TIMES = ['09:00','12:00','15:00'];
+  const ALL_TIMES = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'];
+
+  function buildCalendar() {
+    const { calYear: y, calMonth: m } = state;
+    document.getElementById('calTitle').textContent = `${MONTH_NAMES[m]} ${y}`;
+
+    const header = document.getElementById('calDayNames');
+    header.innerHTML = DAY_NAMES.map(d => `<div class="dg-day-name">${d}</div>`).join('');
+
+    const grid = document.getElementById('calGrid');
+    grid.innerHTML = '';
+
+    const firstDay = new Date(y, m, 1).getDay();
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const today = new Date(); today.setHours(0,0,0,0);
+
+    for (let i = 0; i < firstDay; i++) {
+      grid.innerHTML += `<div class="dg-day empty"></div>`;
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(y, m, d);
+      const isPast = date < today;
+      const isSun  = date.getDay() === 0;
+      const isToday = date.toDateString() === today.toDateString();
+      const isSelected = state.selectedDate && date.toDateString() === state.selectedDate.toDateString();
+      const cls = ['dg-day',
+        isPast || isSun ? 'past' : '',
+        isToday ? 'today' : '',
+        isSelected ? 'selected' : ''
+      ].join(' ').trim();
+
+      grid.innerHTML += `<div class="${cls}" data-date="${date.toISOString()}">${d}</div>`;
+    }
+
+    grid.querySelectorAll('.dg-day:not(.past):not(.empty)').forEach(el => {
+      el.addEventListener('click', () => {
+        state.selectedDate = new Date(el.dataset.date);
+        state.selectedTime = null;
+        buildCalendar();
+        buildTimeSlots();
+        checkStep2();
+      });
+    });
+  }
+
+  function buildTimeSlots() {
+    const container = document.getElementById('timeSlots');
+    if (!state.selectedDate) { container.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;grid-column:1/-1">Select a date to see available times.</div>'; return; }
+
+    container.innerHTML = ALL_TIMES.map(t => {
+      const unavail = UNAVAILABLE_TIMES.includes(t);
+      const sel = state.selectedTime === t;
+      return `<div class="time-slot ${unavail ? 'unavailable' : ''} ${sel ? 'selected' : ''}" data-time="${t}">${t}</div>`;
+    }).join('');
+
+    container.querySelectorAll('.time-slot:not(.unavailable)').forEach(el => {
+      el.addEventListener('click', () => {
+        state.selectedTime = el.dataset.time;
+        buildTimeSlots();
+        checkStep2();
+      });
+    });
+  }
+
+  function changeMonth(dir) {
+    state.calMonth += dir;
+    if (state.calMonth > 11) { state.calMonth = 0; state.calYear++; }
+    if (state.calMonth < 0)  { state.calMonth = 11; state.calYear--; }
+    buildCalendar();
+  }
+
+  function checkStep2() {
+    document.getElementById('btn-2-next').disabled = !(state.selectedDate && state.selectedTime);
+  }
+
+  /* ── Review ── */
+  function buildReview() {
+    const fn = document.getElementById('firstName').value.trim();
+    const ln = document.getElementById('lastName').value.trim();
+    const em = document.getElementById('email').value.trim();
+    const ph = document.getElementById('phone').value.trim();
+    const sv = serviceSelect.value;
+    const dt = state.selectedDate ? state.selectedDate.toLocaleDateString('en-ZA', { weekday:'long', year:'numeric', month:'long', day:'numeric' }) : '—';
+    const tm = state.selectedTime || '—';
+
+    document.getElementById('reviewCard').innerHTML = `
+      <div class="review-row"><span class="rl">Name</span><span class="rv">${fn} ${ln}</span></div>
+      <div class="review-divider"></div>
+      <div class="review-row"><span class="rl">Email</span><span class="rv">${em}</span></div>
+      <div class="review-divider"></div>
+      <div class="review-row"><span class="rl">Phone</span><span class="rv">${ph || '—'}</span></div>
+      <div class="review-divider"></div>
+      <div class="review-row"><span class="rl">Service</span><span class="rv accent">${sv}</span></div>
+      <div class="review-divider"></div>
+      <div class="review-row"><span class="rl">Date</span><span class="rv">${dt}</span></div>
+      <div class="review-divider"></div>
+      <div class="review-row"><span class="rl">Time</span><span class="rv">${tm}</span></div>
+    `;
+  }
+
+  /* ── Confirm ── */
+  function confirmBooking() {
+    const terms = document.getElementById('termsCheck').checked;
+    if (!terms) { alert('Please agree to the contact terms to proceed.'); return; }
+
+    const ref = 'ZX-' + Math.random().toString(36).substring(2,7).toUpperCase();
+    const em  = document.getElementById('email').value.trim();
+
+    document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+    document.querySelector('.step-indicator').style.display = 'none';
+
+    document.getElementById('bookingRef').textContent = ref;
+    document.getElementById('confirmEmail').textContent = em;
+    document.getElementById('successScreen').classList.add('visible');
+  }
+
+  /* ── Init ── */
+  buildCalendar();
+  buildTimeSlots();
+</script>
+</body>
+</html>
